@@ -72,7 +72,7 @@ export function fromRemoteDish(r: RemoteRecord): Omit<Dish, 'syncStatus'> | null
   const time = num(r[COLS.preparationTime]);
   const categoryId = str(r[COLS.dishCategoryId]);
   if (!id || !name || !categoryId) return null;
-  if (!(price > 0) || !(time > 0) || !Number.isInteger(time)) return null;
+  if (!Number.isFinite(price) || !(price > 0) || !(time > 0) || !Number.isInteger(time)) return null;
 
   let rawImages: unknown = r[REMOTE_FIELDS.images];
   if (typeof rawImages === 'string') {

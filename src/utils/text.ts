@@ -59,11 +59,13 @@ export function parseMoney(raw: string): number {
   if (s === '') return NaN;
   // Dạng có phân cách hàng nghìn: 1.234.567 hoặc 1,234,567
   if (/^\d{1,3}([.,]\d{3})+$/.test(s)) {
-    return Number(s.replace(/[.,]/g, ''));
+    const value = Number(s.replace(/[.,]/g, ''));
+    return Number.isFinite(value) ? value : NaN;
   }
   // Dạng thập phân thường: 12.5 / 12,5 / 45000
   if (/^\d+([.,]\d+)?$/.test(s)) {
-    return Number(s.replace(',', '.'));
+    const value = Number(s.replace(',', '.'));
+    return Number.isFinite(value) ? value : NaN;
   }
   return NaN;
 }

@@ -13,7 +13,7 @@ Thời lượng chỉ là gợi ý; đề không quy định số phút. Quay m�
 
 | # | Thao tác | Lời nói gợi ý |
 |---|---|---|
-| 1 | Settings → Inspect database | "Em là Lê Thành Chung, MSSV …. Đây là schema SQLite thật trên máy: mọi bảng, cột, index đều có tiền tố MSSV, khoá ngoại đang bật." |
+| 1 | Danh sách → Settings → Inspect database | "Em là Lê Thành Chung, MSSV BIT240045. Project BIT240045_FoodManager. Đây là schema SQLite thật trên máy: mọi bảng, cột, index đều có tiền tố BIT240045_, khoá ngoại đang bật." |
 | 2 | Về danh sách | "Danh sách hiển thị tên, giá, loại, trạng thái, thời gian, ảnh đại diện và nhãn Quick/Regular." |
 | 3 | Mở Chicken Rice → bấm từng ảnh → Set as thumbnail ảnh 3 → Back | "Món có nhiều ảnh; đổi ảnh đại diện thì ảnh cũ tự bỏ chọn, danh sách cập nhật ngay." |
 | 4 | Add dish: để trống tên, giá 0, thời gian `abc` → Save | "Validation: tên rỗng, giá phải > 0, thời gian là số nguyên phút." |

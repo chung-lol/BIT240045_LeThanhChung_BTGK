@@ -19,14 +19,13 @@
  */
 export const STUDENT_ID = 'BIT240045';
 
-export const MOCKAPI_BASE_URL = 'https://YOUR_PROJECT_ID.mockapi.io/api/v1';
+export const MOCKAPI_BASE_URL = 'https://6ad74ddd95e98f36aef24400.mockapi.io/apt/v1';
 
 /**
  * Tên 2 resource tạo trên MockAPI (đóng vai trò 2 "bảng" phía server), cũng mang tiền tố MSSV
  * cho đồng nhất với yêu cầu đặt tên. Ảnh được nhúng vào bản ghi món ăn
  * (field {MSSV}_Images) nên chỉ cần 2 resource.
- * Nếu giao diện MockAPI không chấp nhận tên này (vd MSSV bắt đầu bằng chữ số),
- * đổi thành tên khác bất kỳ ở đây — các FIELD dữ liệu vẫn luôn có tiền tố MSSV.
+ * Giữ nguyên tiền tố MSSV trong tên resource và field theo quy định đề bài.
  */
 export const MOCKAPI_RESOURCES = {
   categories: `${STUDENT_ID}_DishCategory`,

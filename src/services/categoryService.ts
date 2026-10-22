@@ -38,7 +38,12 @@ export async function saveCategory(input: CategoryFormInput, id?: string): Promi
   const categoryId = id ?? newId();
   try {
     await writeTransaction(async (tx) => {
-      if (id) await catRepo.updateCategoryLocal(tx, id, value, now);
+      if (id) {
+        if (!(await catRepo.getCategory(tx, id))) {
+          throw new ValidationError<CategoryField>({ name: { key: 'categoryNotFound' } });
+        }
+        await catRepo.updateCategoryLocal(tx, id, value, now);
+      }
       else await catRepo.insertCategory(tx, { id: categoryId, ...value, createdAt: now, updatedAt: now });
     });
   } catch (e) {

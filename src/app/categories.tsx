@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { Alert, FlatList, KeyboardAvoidingView, Modal, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, EmptyState, Field, IconButton, Input } from '@/components/ui';
+import { LoadError } from '@/components/LoadError';
 import { useT } from '@/i18n';
 import type { CategoryWithCount } from '@/models';
 import { CategoryInUseError, deleteCategory, getCategoriesWithCount, saveCategory } from '@/services/categoryService';
@@ -21,10 +22,16 @@ export default function CategoriesScreen() {
   const [editing, setEditing] = useState<{ id?: string; name: string; description: string } | null>(null);
   const [errors, setErrors] = useState<Partial<Record<CategoryField, ErrorMessage>>>({});
   const [saving, setSaving] = useState(false);
+  const [failed, setFailed] = useState(false);
+  const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
-    getCategoriesWithCount().then(setItems);
-  }, [version]);
+    let active = true;
+    getCategoriesWithCount()
+      .then((data) => { if (active) { setItems(data); setFailed(false); } })
+      .catch(() => { if (active) setFailed(true); });
+    return () => { active = false; };
+  }, [version, attempt]);
 
   const onDelete = (cat: CategoryWithCount) => {
     Alert.alert(t('deleteCategory'), t('deleteCategoryConfirm', { name: cat.name }), [
@@ -76,7 +83,7 @@ export default function CategoriesScreen() {
           headerRight: () => <IconButton icon="add-circle-outline" label={t('addCategory')} onPress={() => open()} />,
         }}
       />
-      <FlatList
+      {failed ? <LoadError onRetry={() => setAttempt((n) => n + 1)} /> : <FlatList
         data={items}
         keyExtractor={(c) => c.id}
         contentContainerStyle={[styles.list, { paddingBottom: insets.bottom + 24 }]}
@@ -98,7 +105,7 @@ export default function CategoriesScreen() {
             <IconButton icon="trash-outline" label={t('deleteCategory')} color={colors.danger} onPress={() => onDelete(item)} />
           </View>
         )}
-      />
+      />}
 
       <Modal visible={!!editing} transparent animationType="slide" onRequestClose={() => setEditing(null)}>
         <KeyboardAvoidingView style={styles.backdrop} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>

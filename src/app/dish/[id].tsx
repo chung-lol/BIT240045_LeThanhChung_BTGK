@@ -3,6 +3,7 @@ import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { NotFound } from '@/components/NotFound';
+import { LoadError } from '@/components/LoadError';
 import { SmartImage } from '@/components/SmartImage';
 import { Badge, Button, Section } from '@/components/ui';
 import { useT } from '@/i18n';
@@ -23,17 +24,20 @@ export default function DishDetailScreen() {
   const version = useDataStore((s) => s.version);
   const [dish, setDish] = useState<DishDetail | null | undefined>(undefined); // undefined = đang tải
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const [failed, setFailed] = useState(false);
+  const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
     let active = true;
     getDish(String(id))
-      .then((d) => active && setDish(d))
-      .catch(() => active && setDish(null));
+      .then((d) => { if (active) { setDish(d); setFailed(false); } })
+      .catch(() => active && setFailed(true));
     return () => {
       active = false;
     };
-  }, [id, version]);
+  }, [id, version, attempt]);
 
+  if (failed) return <LoadError onRetry={() => setAttempt((n) => n + 1)} />;
   if (dish === undefined) {
     return <ActivityIndicator style={{ marginTop: 48 }} color={colors.basil} />;
   }

@@ -2,6 +2,7 @@ import { router, Stack } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator } from 'react-native';
 import { DishForm } from '@/components/DishForm';
+import { LoadError } from '@/components/LoadError';
 import { useT } from '@/i18n';
 import type { DishCategory } from '@/models';
 import { getCategories } from '@/services/categoryService';
@@ -14,11 +15,18 @@ import { colors } from '@/theme/tokens';
 export default function NewDishScreen() {
   const t = useT();
   const [categories, setCategories] = useState<DishCategory[] | null>(null);
+  const [failed, setFailed] = useState(false);
+  const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
-    getCategories().then(setCategories);
-  }, []);
+    let active = true;
+    getCategories()
+      .then((items) => { if (active) { setCategories(items); setFailed(false); } })
+      .catch(() => { if (active) setFailed(true); });
+    return () => { active = false; };
+  }, [attempt]);
 
+  if (failed) return <LoadError onRetry={() => setAttempt((n) => n + 1)} />;
   if (!categories) return <ActivityIndicator style={{ marginTop: 48 }} color={colors.basil} />;
 
   // Gợi ý sẵn danh mục đang lọc (nếu có) cho thao tác nhanh

@@ -4,6 +4,10 @@ Cột **Tự động** ghi tên test trong `tests/logic.test.ts` (chạy `npm ru
 
 ## A. Validation và ràng buộc nghiệp vụ
 
+Bổ sung sau đối chiếu đề: kiểm thử tự động giá/bộ lọc chứa 400 chữ số, giá không hữu hạn từ MockAPI và sửa loại món không tồn tại. Tổng hiện tại: 48 ca.
+
+Kiểm thử tay bổ sung: gây lỗi đọc SQLite ở danh sách/chi tiết/thêm/sửa/loại món, kiểm tra thông báo tải thất bại và nút thử lại bằng cả English và Tiếng Việt; lỗi truy cập dữ liệu không được hiển thị thành “Dish not found”.
+
 | ID | Tình huống | Thao tác trên app | Kết quả mong đợi | Tự động | Tay |
 |---|---|---|---|---|---|
 | TC01 | Tên toàn khoảng trắng | Thêm món, Name = `"   "` | Lỗi "Name is required", không lưu | TC01 | |

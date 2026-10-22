@@ -4,6 +4,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ConfigWarning } from '@/components/ConfigWarning';
+import { LoadError } from '@/components/LoadError';
+import { STUDENT_ID } from '@/config/appConfig';
 import { DishCard } from '@/components/DishCard';
 import { DishFilters } from '@/components/DishFilters';
 import { SyncStatusBar } from '@/components/SyncStatusBar';
@@ -35,6 +37,8 @@ export default function DishListScreen() {
   const [dishes, setDishes] = useState<DishListItem[]>([]);
   const [categories, setCategories] = useState<DishCategory[]>([]);
   const [loading, setLoading] = useState(true);
+  const [failed, setFailed] = useState(false);
+  const [attempt, setAttempt] = useState(0);
 
   // Tải lại mỗi khi dữ liệu SQLite thay đổi (người dùng lưu hoặc Sync kéo dữ liệu mới về)
   useEffect(() => {
@@ -43,12 +47,14 @@ export default function DishListScreen() {
       try {
         const [d, c] = await Promise.all([getAllDishes(), getCategories()]);
         if (!active) return;
+        setFailed(false);
         setDishes(d);
         setCategories(c);
         // Danh mục đang lọc vừa bị xoá => bỏ điều kiện đó thay vì trả về danh sách rỗng khó hiểu
         const current = useFilterStore.getState().filters.categoryId;
         if (current && !c.some((x) => x.id === current)) setFilter('categoryId', null);
       } catch (e) {
+        if (active) setFailed(true);
         toast('genericError', 'error', { message: e instanceof Error ? e.message : String(e) });
       } finally {
         if (active) setLoading(false);
@@ -57,13 +63,14 @@ export default function DishListScreen() {
     return () => {
       active = false;
     };
-  }, [version, setFilter]);
+  }, [version, setFilter, attempt]);
 
   const { items, priceError } = useMemo(() => applyDishFilters(dishes, filters), [dishes, filters]);
   const activeCount = countActiveFilters(filters);
 
   const header = (
     <View style={styles.header}>
+      <Text style={type.small}>{STUDENT_ID}_FoodManager · Lê Thành Chung</Text>
       <ConfigWarning />
       <SyncStatusBar />
       <View style={styles.searchRow}>
@@ -120,7 +127,7 @@ export default function DishListScreen() {
         ListHeaderComponent={header}
         ItemSeparatorComponent={() => <View style={{ height: space.sm }} />}
         ListEmptyComponent={
-          loading ? undefined : (
+          failed ? <LoadError onRetry={() => setAttempt((n) => n + 1)} /> : loading ? undefined : (
             <EmptyState
               icon={dishes.length === 0 ? 'restaurant-outline' : 'funnel-outline'}
               message={dishes.length === 0 ? t('noDishes') : t('noResults')}
@@ -132,6 +139,7 @@ export default function DishListScreen() {
             />
           )
         }
+        ListFooterComponent={failed && items.length > 0 ? <LoadError onRetry={() => setAttempt((n) => n + 1)} /> : undefined}
         contentContainerStyle={[styles.list, { paddingBottom: insets.bottom + 96 }]}
         keyboardShouldPersistTaps="handled"
       />

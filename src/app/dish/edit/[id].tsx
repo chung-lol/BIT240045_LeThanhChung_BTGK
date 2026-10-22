@@ -2,6 +2,7 @@ import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator } from 'react-native';
 import { DishForm } from '@/components/DishForm';
+import { LoadError } from '@/components/LoadError';
 import { NotFound } from '@/components/NotFound';
 import { useT } from '@/i18n';
 import type { DishCategory, DishDetail } from '@/models';
@@ -15,11 +16,18 @@ export default function EditDishScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const t = useT();
   const [data, setData] = useState<{ dish: DishDetail | null; categories: DishCategory[] } | null>(null);
+  const [failed, setFailed] = useState(false);
+  const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
-    Promise.all([getDish(String(id)), getCategories()]).then(([dish, categories]) => setData({ dish, categories }));
-  }, [id]);
+    let active = true;
+    Promise.all([getDish(String(id)), getCategories()])
+      .then(([dish, categories]) => { if (active) { setData({ dish, categories }); setFailed(false); } })
+      .catch(() => { if (active) setFailed(true); });
+    return () => { active = false; };
+  }, [id, attempt]);
 
+  if (failed) return <LoadError onRetry={() => setAttempt((n) => n + 1)} />;
   if (!data) return <ActivityIndicator style={{ marginTop: 48 }} color={colors.basil} />;
   if (!data.dish) {
     return (

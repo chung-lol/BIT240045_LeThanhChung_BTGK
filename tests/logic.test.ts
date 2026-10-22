@@ -22,6 +22,7 @@ import { DEFAULT_FILTERS } from '@/store/filterStore';
 import { runSyncOnce } from '@/sync/syncEngine';
 import { parseMoney, searchKey } from '@/utils/text';
 import { FakeMockApi } from './fakeMockApi';
+import { fromRemoteDish } from '@/api/remoteMappers';
 
 // ------------------------------------------------------------------ mini test runner
 const results: { name: string; ok: boolean; error?: string }[] = [];
@@ -472,6 +473,27 @@ async function main() {
   });
 
   // ------------------------------------------------------------------ report
+  await test('VAL Số tiền vượt giới hạn Number không được coi là giá hợp lệ', () => {
+    assert(Number.isNaN(parseMoney('9'.repeat(400))), 'phải từ chối Infinity');
+    const result = applyDishFilters([], { ...DEFAULT_FILTERS, minPrice: '9'.repeat(400) });
+    eq(result.priceError?.key, 'minPriceInvalid', 'báo lỗi bộ lọc');
+  });
+
+  await test('API Giá vô hạn từ server bị từ chối trước khi ghi SQLite', () => {
+    eq(fromRemoteDish({
+      id: 'bad-record',
+      [COLS.id]: 'bad-business-id',
+      [COLS.name]: 'Invalid price',
+      [COLS.price]: '9'.repeat(400),
+      [COLS.preparationTime]: 15,
+      [COLS.dishCategoryId]: 'seed-cat-main',
+    }), null, 'không nhập dữ liệu lỗi');
+  });
+
+  await test('CAT Sửa loại món đã bị xoá không báo lưu thành công', async () => {
+    await expectValidation(saveCategory({ name: 'Missing category', description: '' }, 'missing-id'), 'name', 'categoryNotFound');
+  });
+
   const pad = (s: string, n: number) => (s.length >= n ? s : s + ' '.repeat(n - s.length));
   console.log('\n' + pad('RESULT', 8) + 'TEST');
   for (const r of results) {
