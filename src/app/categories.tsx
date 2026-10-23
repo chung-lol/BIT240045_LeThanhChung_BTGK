@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Stack } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Alert, FlatList, KeyboardAvoidingView, Modal, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { FlatList, KeyboardAvoidingView, Modal, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, EmptyState, Field, IconButton, Input } from '@/components/ui';
 import { LoadError } from '@/components/LoadError';
@@ -12,6 +12,7 @@ import { type CategoryField, type ErrorMessage, ValidationError } from '@/servic
 import { useDataStore } from '@/store/dataStore';
 import { toast } from '@/store/toastStore';
 import { colors, radius, space, type } from '@/theme/tokens';
+import { confirmDialog, infoDialog } from '@/utils/dialog';
 
 /** MÀN HÌNH 4 — Loại món: thêm/sửa, và minh hoạ ràng buộc "không xoá loại đang có món". */
 export default function CategoriesScreen() {
@@ -34,25 +35,23 @@ export default function CategoriesScreen() {
   }, [version, attempt]);
 
   const onDelete = (cat: CategoryWithCount) => {
-    Alert.alert(t('deleteCategory'), t('deleteCategoryConfirm', { name: cat.name }), [
-      { text: t('cancel'), style: 'cancel' },
-      {
-        text: t('delete'),
-        style: 'destructive',
-        onPress: async () => {
-          try {
-            await deleteCategory(cat.id);
-            toast('categoryDeleted');
-          } catch (e) {
-            if (e instanceof CategoryInUseError) {
-              Alert.alert(t('deleteCategory'), t('categoryInUse', { name: e.categoryName, count: e.dishCount }));
-            } else {
-              toast('genericError', 'error', { message: e instanceof Error ? e.message : String(e) });
-            }
+    confirmDialog(
+      t('deleteCategory'),
+      t('deleteCategoryConfirm', { name: cat.name }),
+      { cancel: t('cancel'), confirm: t('delete') },
+      async () => {
+        try {
+          await deleteCategory(cat.id);
+          toast('categoryDeleted');
+        } catch (e) {
+          if (e instanceof CategoryInUseError) {
+            infoDialog(t('deleteCategory'), t('categoryInUse', { name: e.categoryName, count: e.dishCount }));
+          } else {
+            toast('genericError', 'error', { message: e instanceof Error ? e.message : String(e) });
           }
-        },
+        }
       },
-    ]);
+    );
   };
 
   const onSave = async () => {

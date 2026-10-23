@@ -83,6 +83,14 @@ npm install          # .npmrc đã bật legacy-peer-deps để tránh lỗi ERE
 npx expo start       # quét QR bằng Expo Go, hoặc bấm "a" để mở Android emulator
 ```
 
+Chạy trên trình duyệt (localhost):
+
+```bash
+npm run web:local    # export bản web vào dist/ rồi mở http://localhost:8080
+```
+
+expo-sqlite trên web cần `SharedArrayBuffer`, nên trang phải có header `Cross-Origin-Opener-Policy` / `Cross-Origin-Embedder-Policy`. Dev server `expo start --web` không gắn header này cho trang HTML, vì vậy `scripts/serve-web.mjs` phục vụ thư mục `dist/` kèm đủ header. Trên web, hộp thoại xác nhận xoá dùng `window.confirm` (`src/utils/dialog.ts`).
+
 Kiểm tra chất lượng:
 
 ```bash

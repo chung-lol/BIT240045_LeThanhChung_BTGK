@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { NotFound } from '@/components/NotFound';
 import { LoadError } from '@/components/LoadError';
 import { SmartImage } from '@/components/SmartImage';
@@ -14,6 +14,7 @@ import { useDataStore } from '@/store/dataStore';
 import { useLanguageStore } from '@/store/languageStore';
 import { toast } from '@/store/toastStore';
 import { colors, radius, space, type } from '@/theme/tokens';
+import { confirmDialog } from '@/utils/dialog';
 import { formatMoney } from '@/utils/text';
 
 /** MÀN HÌNH 2 — Chi tiết món: nhiều ảnh, đổi thumbnail, Quick/Regular, Sửa/Xoá. */
@@ -56,22 +57,20 @@ export default function DishDetailScreen() {
 
   const confirmDelete = () => {
     // Hộp thoại xác nhận: Huỷ => không làm gì; Xoá => xoá rồi quay lại danh sách
-    Alert.alert(t('deleteDish'), t('deleteDishConfirm', { name: dish.name }), [
-      { text: t('cancel'), style: 'cancel' },
-      {
-        text: t('delete'),
-        style: 'destructive',
-        onPress: async () => {
-          try {
-            await deleteDish(dish.id);
-            toast('dishDeleted');
-            router.back();
-          } catch (e) {
-            toast('genericError', 'error', { message: e instanceof Error ? e.message : String(e) });
-          }
-        },
+    confirmDialog(
+      t('deleteDish'),
+      t('deleteDishConfirm', { name: dish.name }),
+      { cancel: t('cancel'), confirm: t('delete') },
+      async () => {
+        try {
+          await deleteDish(dish.id);
+          toast('dishDeleted');
+          router.back();
+        } catch (e) {
+          toast('genericError', 'error', { message: e instanceof Error ? e.message : String(e) });
+        }
       },
-    ]);
+    );
   };
 
   const makeThumbnail = async (imageId: string) => {
